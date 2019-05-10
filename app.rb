@@ -1,35 +1,34 @@
-require 'bundler'
-Bundler.require
 require './idea'
+require './idea_store'
 
 class IdeaBoxApp < Sinatra::Base
-    set :method_override, true
-    
-    configure :development do
-        register Sinatra::Reloader
-    end
+  set :method_override, true
 
-    not_found do
-        erb :error
-    end
+  not_found do
+    erb :error
+  end
 
-    post '/' do
-        # # 1. Create and idea based on the form parameters
-        idea = Idea.new(params['idea_title'], params['idea_description'])
+  get '/' do
+    erb :index, locals: {ideas: IdeaStore.all, idea: Idea.new(params)}
+  end
 
-        # # 2. Store it
-        idea.save
-        # # 3. Send us back to the index page to see all ideas
-        redirect '/'
-    end
+  post '/' do
+    IdeaStore.create(params[:idea])
+    redirect '/'
+  end
 
-    get '/' do
-        erb :index, locals: {ideas: Idea.all}
-    end
+  delete '/:id' do |id|
+    IdeaStore.delete(id.to_i)
+    redirect '/'
+  end
 
-    delete '/:id' do |id|
-        Idea.delete(id.to_i)
-        redirect '/'
-    end
+  get '/:id/edit' do |id|
+    idea = IdeaStore.find(id.to_i)
+    erb :edit, locals: {id: id, idea: idea}
+  end
 
+  put '/:id' do |id|
+    IdeaStore.update(id.to_i, params[:idea])
+    redirect '/'
+  end
 end
