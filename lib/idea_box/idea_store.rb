@@ -9,10 +9,12 @@ class IdeaStore
     end
 
     def self.all
-        raw_ideas.map do |data|
-            Idea.new(data)
+        ideas = []
+        raw_ideas.each_with_index do |data, i|
+          ideas << Idea.new(data.merge("id" => i))
         end
-    end
+        ideas
+      end
 
     def self.raw_ideas
         database.transaction do |db|
@@ -31,8 +33,9 @@ class IdeaStore
     end
 
     def self.find(id)
-        Idea.new(find_raw_idea(id))
-    end
+        raw_idea = find_raw_idea(id)
+        Idea.new(raw_idea.merge("id" => id))
+      end
 
     def self.find_raw_idea(id)
         database.transaction do
